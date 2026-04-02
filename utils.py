@@ -59,7 +59,11 @@ def generate_doc_id(product_name: str) -> str:
     """Generates a consistent document ID from a product name.
     Replaces spaces with underscores and slashes with hyphens, and removes other special characters.
     """
-    return re.sub(r'[^a-zA-Z0-9_.-]', '', product_name.replace(" ", "_").replace("/", "-"))
+    if not product_name:
+        return "unknown"
+    # Normalize to lowercase and strip whitespace to ensure consistent lookups
+    normalized_name = product_name.strip().lower()
+    return re.sub(r'[^a-zA-Z0-9_.-]', '', normalized_name.replace(" ", "_").replace("/", "-"))
 
 def get_all_materials(db: firestore.Client) -> List[Dict[str, Any]]:
     """Fetches all material documents from the Firestore collection."""
