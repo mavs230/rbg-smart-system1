@@ -3,6 +3,7 @@ import streamlit as st
 from firebase_admin import credentials, firestore
 from typing import Any, Dict, List
 import re
+import os
 
 # Assuming config.py is in the same directory
 import config
@@ -22,12 +23,21 @@ def get_firestore_client() -> firestore.Client:
                 if "private_key" in firebase_creds:
                     firebase_creds["private_key"] = firebase_creds["private_key"].replace("\\n", "\n")
                 cred = credentials.Certificate(firebase_creds)
-            else:
+            elif os.path.exists(config.SERVICE_ACCOUNT_KEY_PATH):
+                # Fallback to local file for development
                 cred = credentials.Certificate(config.SERVICE_ACCOUNT_KEY_PATH)
+            else:
+                st.error(
+                    f"⚖️ **Firebase Credentials Missing!**\n\n"
+                    f"The app cannot find your credentials.\n\n"
+                    f"- **On Streamlit Cloud:** Ensure you have added your secrets in the dashboard settings under the `[firebase]` section.\n"
+                    f"- **Locally:** Ensure `{config.SERVICE_ACCOUNT_KEY_PATH}` exists in your project folder."
+                )
+                st.stop()
             
             app = firebase_admin.initialize_app(cred)
         except Exception as e:
-            st.error(f"Error initializing Firebase: {e}")
+            st.error(f"🔥 Firebase Initialization Error: {e}")
             st.stop()
     
     return firestore.client()
