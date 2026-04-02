@@ -7,6 +7,7 @@ from typing import List, Dict, Any
 import utils
 import config
 from smart_quoter import calculate_quote
+from ml_service import predict_price_trend
 
 # --- 1. PAGE CONFIG & STYLING ---
 st.set_page_config(page_title="RBG Smart System", page_icon="🚀", layout="wide")
@@ -89,6 +90,23 @@ with tab2:
         else:
             st.metric("Suggested Quote", f"R{res['Final Quote (Inc. Markup)']:,.2f}")
             st.caption(f"Includes R{res['Total Labor Cost']:,} labor and R{res['Total Material Cost']:,} materials.")
+            
+            # --- ML Prediction Section ---
+            st.markdown("---")
+            with st.expander("🔮 AI Price Trend Analysis", expanded=True):
+                prediction, error = predict_price_trend(q_material)
+                if prediction:
+                    p_val = prediction['predicted_price']
+                    current_p = next((m.get('price', 0) for m in all_materials if m.get('name') == q_material), 0)
+                    trend = "rising 📈" if p_val > current_p else "falling 📉"
+                    
+                    st.write(f"The 30-day forecast suggests prices are **{trend}**.")
+                    st.metric("Predicted Price", f"R{p_val:.2f}", delta=f"{p_val - current_p:.2f}", delta_color="inverse")
+                    
+                    conf = prediction['confidence']
+                    st.progress(conf / 100 if conf > 0 else 0, text=f"Model Confidence: {conf}%")
+                else:
+                    st.info(f"💡 AI Insight: {error}")
 
 # --- TAB 3: ORDER MATERIALS (The Email Feature) ---
 with tab3:
@@ -132,4 +150,3 @@ if all_materials:
     st.sidebar.success("✅ Database Connected")
 else:
     st.sidebar.warning("⚠️ Database Empty or Connecting...")
-
