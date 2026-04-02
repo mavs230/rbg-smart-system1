@@ -38,5 +38,6 @@ def calculate_quote(product_name: str, quantity: float, labor_hours: float, comp
     }
 # Test Case
 if __name__ == "__main__":
-    res = calculate_quote("Gloss White Vinyl 50m", quantity=1, labor_hours=2)
+    # Test with lowercase to verify normalization works
+    res = calculate_quote("gloss white vinyl 50m", quantity=1, labor_hours=2)
     print(f"💰 Quote Result: {res}")
