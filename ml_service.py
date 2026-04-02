@@ -12,22 +12,24 @@ def predict_price_trend(material_name: str, days_into_future: int = 30):
     db = utils.get_firestore_client()
     clean_id = utils.generate_doc_id(material_name)
     
-    # Fetch history from Firestore
-    history_ref = db.collection(config.HISTORY_COLLECTION).where("material_id", "==", clean_id).order_by("timestamp")
-    docs = history_ref.stream()
+    # Fetch history - removed order_by to avoid needing manual Firestore indexes
+    docs = db.collection(config.HISTORY_COLLECTION).where("material_id", "==", clean_id).stream()
     
     data = []
     for doc in docs:
         d = doc.to_dict()
-        data.append({
-            'timestamp': d['timestamp'].timestamp(), # Convert to unix numeric
-            'price': d['price']
-        })
+        # Defensive check for missing data
+        if 'timestamp' in d and 'price' in d:
+            data.append({
+                'timestamp': d['timestamp'].timestamp(), # Convert to unix numeric
+                'price': d['price']
+            })
     
     if len(data) < 3:
         return None, "Need at least 3 historical data points to predict a trend."
 
-    df = pd.DataFrame(data)
+    # Sort by time in Python
+    df = pd.DataFrame(data).sort_values('timestamp')
     
     # ML Setup: X = Time, y = Price
     X = df[['timestamp']].values
