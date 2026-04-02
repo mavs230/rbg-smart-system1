@@ -22,6 +22,19 @@ def get_firestore_client() -> firestore.Client:
                 firebase_creds = dict(st.secrets["firebase"])
                 if "private_key" in firebase_creds:
                     firebase_creds["private_key"] = firebase_creds["private_key"].replace("\\n", "\n")
+                
+                # Validate required fields for Firebase SDK
+                required_fields = [
+                    "type", "project_id", "private_key_id", "private_key", 
+                    "client_email", "client_id", "auth_uri", "token_uri", 
+                    "auth_provider_x509_cert_url", "client_x509_cert_url"
+                ]
+                missing_keys = [k for k in required_fields if k not in firebase_creds]
+                if missing_keys:
+                    st.error(f"❌ Firebase Secrets are incomplete. Missing keys: {', '.join(missing_keys)}")
+                    st.info("Please ensure you have copied the ENTIRE contents of your service account JSON into the Streamlit Secrets dashboard.")
+                    st.stop()
+
                 cred = credentials.Certificate(firebase_creds)
             elif os.path.exists(config.SERVICE_ACCOUNT_KEY_PATH):
                 # Fallback to local file for development
