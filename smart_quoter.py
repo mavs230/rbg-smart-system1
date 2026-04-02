@@ -17,7 +17,6 @@ def calculate_quote(product_name: str, quantity: float, labor_hours: float, comp
     Returns:
         A dictionary containing the quote details or an error message.
     """
-    db = utils.get_firestore_client()
     doc_id = utils.generate_doc_id(product_name)
     doc = db.collection(config.MATERIAL_COLLECTION).document(doc_id).get()
 
