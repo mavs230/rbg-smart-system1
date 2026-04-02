@@ -7,32 +7,29 @@ import re
 # Assuming config.py is in the same directory
 import config
 
-def initialize_firebase() -> None:
-    """Initializes the Firebase Admin SDK if not already initialized."""
+@st.cache_resource
+def get_firestore_client() -> firestore.Client:
+    """
+    Initializes Firebase and returns a cached Firestore client.
+    Using st.cache_resource ensures initialization happens only once.
+    """
     try:
-        firebase_admin.get_app()
+        app = firebase_admin.get_app()
     except ValueError:
         try:
-            # Check if running on Streamlit Cloud with secrets configured
             if "firebase" in st.secrets:
-                # Convert the Secret object to a standard dictionary
                 firebase_creds = dict(st.secrets["firebase"])
-                # Ensure newline characters in the private key are handled correctly
                 if "private_key" in firebase_creds:
                     firebase_creds["private_key"] = firebase_creds["private_key"].replace("\\n", "\n")
                 cred = credentials.Certificate(firebase_creds)
             else:
-                # Fallback to local file for development
                 cred = credentials.Certificate(config.SERVICE_ACCOUNT_KEY_PATH)
-                
-            firebase_admin.initialize_app(cred)
+            
+            app = firebase_admin.initialize_app(cred)
         except Exception as e:
             st.error(f"Error initializing Firebase: {e}")
-            st.stop()  # Stop execution to prevent further crashes
-
-def get_firestore_client() -> firestore.Client:
-    """Returns a Firestore client instance."""
-    initialize_firebase()
+            st.stop()
+    
     return firestore.client()
 
 def generate_doc_id(product_name: str) -> str:
