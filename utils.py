@@ -9,7 +9,9 @@ import config
 
 def initialize_firebase() -> None:
     """Initializes the Firebase Admin SDK if not already initialized."""
-    if not firebase_admin._apps:
+    try:
+        firebase_admin.get_app()
+    except ValueError:
         try:
             # Check if running on Streamlit Cloud with secrets configured
             if "firebase" in st.secrets:
