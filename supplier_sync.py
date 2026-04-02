@@ -21,6 +21,8 @@ def update_supplier_prices(product_name: str, supplier_data: List[Dict[str, Any]
         print(f"⚠️ No supplier data provided for {product_name}. Skipping.")
         return
 
+    db = utils.get_firestore_client()
+
     cheapest = min(supplier_data, key=lambda x: x.get('price', float('inf')))
 
     # Standardizing keys so app.py and smart_quoter.py can read them easily
@@ -35,7 +37,6 @@ def update_supplier_prices(product_name: str, supplier_data: List[Dict[str, Any]
         'current_stock': config.DEFAULT_STOCK
     }
 
-    db = utils.get_firestore_client()
     clean_id = utils.generate_doc_id(product_name)
     db.collection(config.MATERIAL_COLLECTION).document(clean_id).set(data)
     print(f"✅ Synced: {product_name} (Best: R{data['price']} via {data['best_supplier']})")
@@ -74,4 +75,3 @@ if __name__ == "__main__":
     for material, prices in inventory.items():
         update_supplier_prices(material, prices)
     print("--- Sync Complete ---")
-    
