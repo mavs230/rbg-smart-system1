@@ -50,10 +50,10 @@ def get_firestore_client() -> firestore.Client:
             
             app = firebase_admin.initialize_app(cred)
         except Exception as e:
-            st.error(f"🔥 Firebase Initialization Error: {e}")
+            st.error(f"🔥 Firebase Initialization Error: {str(e)}")
             st.stop()
     
-    return firestore.client()
+    return firestore.client(app=app)
 
 def generate_doc_id(product_name: str) -> str:
     """Generates a consistent document ID from a product name.
