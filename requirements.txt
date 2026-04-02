@@ -1,16 +1,18 @@
-
 # Firebase & Database
-firebase-admin
+firebase-admin==7.3.0
+google-auth==2.38.0
+google-cloud-firestore==2.26.0
 
 # Data Analysis & Logic
-pandas
-numpy
+pandas==3.0.2
+numpy==2.4.4
 
 # Web Scraping
-requests
-beautifulsoup4
-selenium
-webdriver-manager
+requests==2.33.1
+beautifulsoup4==4.14.3
+selenium==4.41.0
+webdriver-manager==4.0.2
 
 # Frontend (The Web Dashboard)
-streamlit
+streamlit==1.56.0
+urllib3==2.6.3
