@@ -4,56 +4,69 @@ from firebase_admin import credentials, firestore
 from typing import Any, Dict, List
 import re
 import os
+import sys
 
 # Assuming config.py is in the same directory
 import config
 
-@st.cache_resource
+def _handle_fatal_error(message: str):
+    """Helper to report errors safely in both Streamlit and CLI environments."""
+    if st.runtime.exists():
+        st.error(message)
+        st.stop()
+    else:
+        print(f"❌ FATAL ERROR: {message}")
+        sys.exit(1)
+
 def get_firestore_client() -> firestore.Client:
     """
-    Initializes Firebase and returns a cached Firestore client.
-    Using st.cache_resource ensures initialization happens only once.
+    Returns a Firestore client. Uses Streamlit caching if running in a web session,
+    otherwise performs a standard initialization for CLI scripts.
+    """
+    if st.runtime.exists():
+        return _get_cached_firestore_client()
+    return _initialize_firebase_logic()
+
+@st.cache_resource(show_spinner=False)
+def _get_cached_firestore_client() -> firestore.Client:
+    return _initialize_firebase_logic()
+
+def _initialize_firebase_logic() -> firestore.Client:
+    """
+    Internal logic to initialize the Firebase app and return the client.
     """
     try:
         app = firebase_admin.get_app()
+        return firestore.client(app=app)
     except ValueError:
-        try:
-            if "firebase" in st.secrets:
-                firebase_creds = dict(st.secrets["firebase"])
-                if "private_key" in firebase_creds:
-                    firebase_creds["private_key"] = firebase_creds["private_key"].replace("\\n", "\n")
-                
-                # Validate required fields for Firebase SDK
-                required_fields = [
-                    "type", "project_id", "private_key_id", "private_key", 
-                    "client_email", "client_id", "auth_uri", "token_uri", 
-                    "auth_provider_x509_cert_url", "client_x509_cert_url"
-                ]
-                missing_keys = [k for k in required_fields if k not in firebase_creds]
-                if missing_keys:
-                    st.error(f"❌ Firebase Secrets are incomplete. Missing keys: {', '.join(missing_keys)}")
-                    st.info("Please ensure you have copied the ENTIRE contents of your service account JSON into the Streamlit Secrets dashboard.")
-                    st.stop()
+        pass # Needs initialization
 
-                cred = credentials.Certificate(firebase_creds)
-            elif os.path.exists(config.SERVICE_ACCOUNT_KEY_PATH):
-                # Fallback to local file for development
-                cred = credentials.Certificate(config.SERVICE_ACCOUNT_KEY_PATH)
-            else:
-                st.error(
-                    f"⚖️ **Firebase Credentials Missing!**\n\n"
-                    f"The app cannot find your credentials.\n\n"
-                    f"- **On Streamlit Cloud:** Ensure you have added your secrets in the dashboard settings under the `[firebase]` section.\n"
-                    f"- **Locally:** Ensure `{config.SERVICE_ACCOUNT_KEY_PATH}` exists in your project folder."
-                )
-                st.stop()
-            
-            app = firebase_admin.initialize_app(cred)
-        except Exception as e:
-            st.error(f"🔥 Firebase Initialization Error: {str(e)}")
-            st.stop()
+    # 1. Attempt to find credentials
+    cred = None
     
-    return firestore.client(app=app)
+    # Check st.secrets safely (st.secrets triggers errors if accessed outside Streamlit)
+    try:
+        if "firebase" in st.secrets:
+            firebase_creds = dict(st.secrets["firebase"])
+            if "private_key" in firebase_creds:
+                firebase_creds["private_key"] = firebase_creds["private_key"].replace("\\n", "\n")
+            cred = credentials.Certificate(firebase_creds)
+    except:
+        pass
+
+    # 2. Fallback to local file
+    if not cred and os.path.exists(config.SERVICE_ACCOUNT_KEY_PATH):
+        cred = credentials.Certificate(config.SERVICE_ACCOUNT_KEY_PATH)
+
+    if not cred:
+        _handle_fatal_error("Firebase Credentials Missing! No st.secrets or serviceAccountKey.json found.")
+
+    # 3. Initialize the app
+    try:
+        app = firebase_admin.initialize_app(cred)
+        return firestore.client(app=app)
+    except Exception as e:
+        _handle_fatal_error(f"Firebase Initialization Error: {e}")
 
 def generate_doc_id(product_name: str) -> str:
     """Generates a consistent document ID from a product name.
