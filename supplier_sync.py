@@ -26,9 +26,10 @@ def update_supplier_prices(product_name: str, supplier_data: List[Dict[str, Any]
     cheapest = min(supplier_data, key=lambda x: x.get('price', float('inf')))
 
     # Standardizing keys so app.py and smart_quoter.py can read them easily
+    now = datetime.datetime.now()
     data = {
         'name': product_name,
-        'last_updated': datetime.datetime.now(), # Store as datetime object
+        'last_updated': now,
         'price': float(cheapest.get('price', 0.0)),
         'best_supplier': cheapest['name'],
         'supplier_email': SUPPLIER_EMAILS.get(cheapest['name'], config.DEFAULT_EMAIL_DOMAIN.format(supplier_name=cheapest['name'].lower().replace(' ', ''))),
@@ -39,6 +40,15 @@ def update_supplier_prices(product_name: str, supplier_data: List[Dict[str, Any]
 
     clean_id = utils.generate_doc_id(product_name)
     db.collection(config.MATERIAL_COLLECTION).document(clean_id).set(data)
+    
+    # ML Add-on: Save to history for trend analysis
+    history_entry = {
+        'material_id': clean_id,
+        'timestamp': now,
+        'price': data['price']
+    }
+    db.collection(config.HISTORY_COLLECTION).add(history_entry)
+    
     print(f"✅ Synced: {product_name} (Best: R{data['price']} via {data['best_supplier']})")
 
 # --- INVENTORY ---
