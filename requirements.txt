@@ -2,6 +2,7 @@
 firebase-admin==7.3.0
 google-auth==2.38.0
 google-cloud-firestore==2.26.0
+scikit-learn==1.6.1
 
 # Data Analysis & Logic
 pandas==3.0.2
