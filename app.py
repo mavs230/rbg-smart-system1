@@ -6,6 +6,7 @@ from typing import List, Dict, Any
 # Local imports
 import utils
 import config
+from smart_quoter import calculate_quote
 
 # --- 1. PAGE CONFIG & STYLING ---
 st.set_page_config(page_title="RBG Smart System", page_icon="🚀", layout="wide")
@@ -25,6 +26,7 @@ def update_stock(doc_id: str, new_stock: float) -> None:
     db.collection(config.MATERIAL_COLLECTION).document(doc_id).update({"current_stock": new_stock})
 
 all_materials = get_data()
+mat_names = [m.get('name') for m in all_materials] if all_materials else []
 
 # --- 3. APP UI ---
 st.title("🚀 RBG Smart System: Pro Edition")
@@ -69,24 +71,28 @@ with tab2:
     if all_materials:
         st.header("Project Cost Calculator")
         # (Keeping the quoter logic from previous version...)
-        names = [m.get('name') for m in all_materials]
-        q_material = st.selectbox("Material:", names)
-        q_qty = st.number_input("Amount needed:", min_value=0.1, value=1.0)
+        col_q1, col_q2 = st.columns(2)
+        with col_q1:
+            q_material = st.selectbox("Material:", mat_names)
+            q_qty = st.number_input("Amount needed:", min_value=0.1, value=1.0)
+        with col_q2:
+            q_labor = st.number_input("Estimated Labor Hours:", min_value=0.0, value=1.0, step=0.5)
+            q_complexity = st.slider("Job Complexity:", 1.0, 2.5, 1.0, 0.1)
 
-        selected_mat = next((x for x in all_materials if x.get('name') == q_material), None)
-        if selected_mat:
-            price = selected_mat.get('price', 0)
-            total = (price * q_qty + config.PROJECT_OVERHEAD) * config.DEFAULT_MARKUP # Simplified example math
+        # Use the unified calculation logic
+        res = calculate_quote(q_material, quantity=q_qty, labor_hours=q_labor, complexity=q_complexity)
+        
+        if "error" in res:
+            st.error(res["error"])
         else:
-            price = 0
-            total = 0
-        st.metric("Suggested Quote", f"R{total:,.2f}")
+            st.metric("Suggested Quote", f"R{res['Final Quote (Inc. Markup)']:,.2f}")
+            st.caption(f"Includes R{res['Total Labor Cost']:,} labor and R{res['Total Material Cost']:,} materials.")
 
 # --- TAB 3: ORDER MATERIALS (The Email Feature) ---
 with tab3:
     st.header("📩 Supplier Order Automator")
-    if all_materials:
-        order_mat = st.selectbox("What do you need to buy?", names)
+    if mat_names:
+        order_mat = st.selectbox("What do you need to buy?", mat_names)
         item = next((x for x in all_materials if x.get('name') == order_mat), None)
 
         if item:
@@ -119,3 +125,8 @@ with tab3:
 
 st.sidebar.markdown("---")
 st.sidebar.info("System: V2.0 (Stock + Ordering)")
+
+if all_materials:
+    st.sidebar.success("✅ Database Connected")
+else:
+    st.sidebar.warning("⚠️ Database Empty or Connecting...")
