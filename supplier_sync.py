@@ -5,9 +5,6 @@ from typing import List, Dict, Any
 import utils
 import config
 
-# --- INITIALIZATION ---
-db = utils.get_firestore_client()
-
 # Add a dictionary to store supplier emails (could be from a separate config or DB)
 SUPPLIER_EMAILS = {
     'Maizey Plastics': 'sales@maizeyplastics.co.za',
@@ -21,9 +18,11 @@ def update_supplier_prices(product_name: str, supplier_data: List[Dict[str, Any]
     identifying the cheapest supplier and including supplier emails.
     """
     if not supplier_data:
+        db = utils.get_firestore_client()
         print(f"⚠️ No supplier data provided for {product_name}. Skipping.")
         return
 
+    db = utils.get_firestore_client()
     cheapest = min(supplier_data, key=lambda x: x.get('price', float('inf')))
 
     # Standardizing keys so app.py and smart_quoter.py can read them easily
@@ -76,4 +75,5 @@ if __name__ == "__main__":
     for material, prices in inventory.items():
         update_supplier_prices(material, prices)
     print("--- Sync Complete ---")
+    
     
