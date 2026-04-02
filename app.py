@@ -12,6 +12,7 @@ from smart_quoter import calculate_quote
 st.set_page_config(page_title="RBG Smart System", page_icon="🚀", layout="wide")
 
 # --- 2. FUNCTIONS ---
+@st.cache_data
 def get_data() -> List[Dict[str, Any]]:
     """Fetches all material data from Firestore."""
     db = utils.get_firestore_client()
@@ -23,6 +24,8 @@ def update_stock(doc_id: str, new_stock: float) -> None:
     """
     db = utils.get_firestore_client()
     db.collection(config.MATERIAL_COLLECTION).document(doc_id).update({"current_stock": new_stock})
+    # Clear cache so the inventory table updates immediately
+    st.cache_data.clear()
 
 all_materials = get_data()
 mat_names = [m.get('name') for m in all_materials] if all_materials else []
@@ -129,3 +132,4 @@ if all_materials:
     st.sidebar.success("✅ Database Connected")
 else:
     st.sidebar.warning("⚠️ Database Empty or Connecting...")
+
