@@ -116,7 +116,7 @@ with tab3:
         item = next((x for x in all_materials if x.get('name') == order_mat), None)
 
         if item:
-            supplier = item.get('best_supplier')
+            supplier = item.get('best_supplier', 'Unknown Supplier')
             price = item.get('price')
             supplier_email = item.get('supplier_email', config.DEFAULT_EMAIL_DOMAIN.format(supplier_name=supplier.lower().replace(' ', ''))) # Use stored email or default
 
