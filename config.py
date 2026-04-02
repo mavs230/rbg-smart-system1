@@ -1,4 +1,5 @@
 MATERIAL_COLLECTION = "material_prices"
+HISTORY_COLLECTION = "price_history"
 SERVICE_ACCOUNT_KEY_PATH = "serviceAccountKey.json" # For local development, consider environment variables for production
 
 # Quoting
