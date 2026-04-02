@@ -15,6 +15,9 @@ def initialize_firebase() -> None:
             if "firebase" in st.secrets:
                 # Convert the Secret object to a standard dictionary
                 firebase_creds = dict(st.secrets["firebase"])
+                # Ensure newline characters in the private key are handled correctly
+                if "private_key" in firebase_creds:
+                    firebase_creds["private_key"] = firebase_creds["private_key"].replace("\\n", "\n")
                 cred = credentials.Certificate(firebase_creds)
             else:
                 # Fallback to local file for development
@@ -23,6 +26,7 @@ def initialize_firebase() -> None:
             firebase_admin.initialize_app(cred)
         except Exception as e:
             st.error(f"Error initializing Firebase: {e}")
+            st.stop()  # Stop execution to prevent further crashes
 
 def get_firestore_client() -> firestore.Client:
     """Returns a Firestore client instance."""
@@ -41,5 +45,5 @@ def get_all_materials(db: firestore.Client) -> List[Dict[str, Any]]:
         docs = db.collection(config.MATERIAL_COLLECTION).stream()
         return [doc.to_dict() for doc in docs]
     except Exception as e:
-        print(f"Error fetching materials: {e}")
+        st.error(f"Error fetching materials: {e}")
         return []
