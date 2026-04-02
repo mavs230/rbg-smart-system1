@@ -34,7 +34,7 @@ def calculate_quote(product_name: str, quantity: float, labor_hours: float, comp
         "Total Material Cost": round(mat_cost, 2),
         "Total Labor Cost": round(labor_cost, 2),
         "Final Quote (Inc. Markup)": round(total, 2),
-        "Supplier": data['best_supplier']
+        "Supplier": data.get('best_supplier', 'N/A')
     }
 # Test Case
 if __name__ == "__main__":
