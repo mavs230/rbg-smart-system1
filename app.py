@@ -11,18 +11,17 @@ from smart_quoter import calculate_quote
 # --- 1. PAGE CONFIG & STYLING ---
 st.set_page_config(page_title="RBG Smart System", page_icon="🚀", layout="wide")
 
-# Initialize Firebase and get Firestore client
-db = utils.get_firestore_client()
-
 # --- 2. FUNCTIONS ---
 def get_data() -> List[Dict[str, Any]]:
     """Fetches all material data from Firestore."""
+    db = utils.get_firestore_client()
     return utils.get_all_materials(db)
 
 def update_stock(doc_id: str, new_stock: float) -> None:
     """
     Updates the current stock level for a given material in Firestore.
     """
+    db = utils.get_firestore_client()
     db.collection(config.MATERIAL_COLLECTION).document(doc_id).update({"current_stock": new_stock})
 
 all_materials = get_data()
