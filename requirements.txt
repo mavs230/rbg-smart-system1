@@ -1,0 +1,16 @@
+
+# Firebase & Database
+firebase-admin
+
+# Data Analysis & Logic
+pandas
+numpy
+
+# Web Scraping
+requests
+beautifulsoup4
+selenium
+webdriver-manager
+
+# Frontend (The Web Dashboard)
+streamlit

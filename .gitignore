@@ -1,0 +1,11 @@
+# Firebase Secrets
+serviceAccountKey.json
+.streamlit/secrets.toml
+
+# Python environment
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
