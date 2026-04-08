@@ -1,0 +1,58 @@
+RBG Smart System: Procurement & Quoting Intelligence
+Overview
+
+The RBG Smart System is a full-stack automated procurement and dynamic quoting platform developed for a specialized graphic design and signage company. It addresses critical operational bottlenecks by transforming manual supplier price tracking into a data-driven, automated workflow. 
+The Problem
+
+The client faced significant manual admin overhead in two key areas:
+
+    Procurement Inefficiency: Manually checking prices across multiple regional suppliers (Maizey, Stixo, Falcon) was time-consuming and often led to missed savings. 
+
+    Quoting Bottlenecks: Calculating job costs (materials + labor + overhead) manually delayed customer responses and created room for human error. 
+
+The Solution
+
+An end-to-end IT system that integrates real-time market data with business logic to optimize profit margins. 
+Key Features
+
+    Market Intelligence Engine: Automatically compares material prices across diverse suppliers to identify the lowest market rates. 
+
+    Dynamic Job Quoter: A professional calculator that factors in real-time material costs, labor hours, and job complexity to generate instant, accurate quotes. 
+
+    Inventory & Stock Tracking: Real-time monitoring of workshop stock levels with an integrated manual update interface. 
+
+    Order Automator: Generates automated order request drafts to suppliers via a "Lead-to-Cash" pipeline, streamlining the purchasing process. 
+
+    Cloud Integration: Built on a NoSQL backbone for persistent, secure, and remote data access. 
+
+Tech Stack
+
+    Language: Python (Pandas, NumPy) 
+
+    Frontend: Streamlit 
+
+    Database: Google Firebase (Firestore) 
+
+    DevOps: Environment-specific configuration for local and cloud deployment. 
+
+Project Architecture
+
+    supplier_sync.py: A data ingestion script that cleans and pushes the latest supplier data to the cloud. 
+
+    app.py: The main user interface providing the Dashboard, Quoter, and Ordering tools. 
+
+    serviceAccountKey.json: Secure authentication for Firebase administrative access. 
+
+Impact
+
+    90% Reduction in manual quoting time. 
+
+    100% Price Accuracy by eliminating manual spreadsheet entries. 
+
+    Direct Revenue Growth enabled by faster customer response times and optimized material procurement. 
+
+Developer: Mauro A. Vieira Simão
+
+Role: IT Systems & ML Consultant (Freelance) 
+
+Contact: Portfolio | LinkedIn
